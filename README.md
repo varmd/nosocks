@@ -15,6 +15,7 @@ Nosocks uses library preloading to limit access to the internet for apps that ar
 ----
 ## Logging
 Export NOSOCKS_DEBUG=2 to see verbose messages
+
 Export NOSOCKS_DEBUG_FILE=yourfile to log messages to a file
 
 
