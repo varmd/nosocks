@@ -1,0 +1,29 @@
+#Copyright (C) 2020 varmd
+
+pkgname=lib32-nosocks
+pkgver=1
+pkgrel=3
+pkgdesc='Control access to the internet for non-static apps on Linux.'
+url=''
+license=('GPL')
+arch=('x86_64')
+#install=nosocks.install
+
+
+build() {
+	cd "${srcdir}/nosocks"
+	export CC="gcc -m32"
+  export CXX="g++ -m32"
+  export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
+  gcc -fPIC -m32 -mtune=generic -O2 -pipe -fno-plt -w  -I. *.c -nostdlib -shared -o libnosocks.so -ldl -lc
+}
+
+package() {
+  #install=nosocks.install
+	cd "${srcdir}/nosocks"
+	mkdir -p "${pkgdir}/usr/lib32/"
+	install libnosocks.so "${pkgdir}/usr/lib32/libnosocks.so"
+	rm -rf libnosocks.so
+  rm -rf *.o
+	
+}

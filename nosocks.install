@@ -1,0 +1,9 @@
+post_install() {  
+  echo "Appending nosocks to your ld.so.preload"
+  sed -i '/nosocks/d' /etc/ld.so.preload
+  echo "/usr/lib/libnosocks.so" >> /etc/ld.so.preload
+}
+
+post_remove() {
+  sed -i '/nosocks/d' /etc/ld.so.preload
+}
