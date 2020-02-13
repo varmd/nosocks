@@ -2,7 +2,7 @@
 
 pkgname=nosocks
 pkgver=1
-pkgrel=3
+pkgrel=4
 pkgdesc='Control access to the internet for non-static apps on Linux.'
 url=''
 license=('GPL')
@@ -10,6 +10,9 @@ arch=('x86_64')
 depends=(glibc gcc)
 install=nosocks.install
 
+backup=("etc/${pkgname}/${pkgname}.conf"
+
+)
 
 build() {
 	cd "${srcdir}/${pkgname}"

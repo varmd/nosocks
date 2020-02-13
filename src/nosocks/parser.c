@@ -634,6 +634,7 @@ int is_app_allowed(char *app_name) {
 
 	for (int i = 0; i < MAXAPPS; i++) {
     //printf("name %s \n", apps_allowed_names[i]);
+    //printf("name %s \n", app_name);
 		if(!strcmp(apps_allowed_names[i], app_name)) {
       return 1;  
     }

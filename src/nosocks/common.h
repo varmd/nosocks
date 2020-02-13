@@ -53,11 +53,11 @@ allows socksified DNS */
 #define CONNECT_SOCKARG struct sockaddr *
 
 /* Prototype and function header for select function */
-#define SELECT_SIGNATURE int n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout
+//#define SELECT_SIGNATURE int n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout
 
 
 /* Prototype and function header for close function */
-#define CLOSE_SIGNATURE int fd
+//#define CLOSE_SIGNATURE int fd
 
 #undef SOCKET_SIGNATURE
 

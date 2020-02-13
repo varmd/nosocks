@@ -59,9 +59,9 @@ extern char *program_invocation_short_name;
 
 
 static int (*realconnect)(CONNECT_SIGNATURE);
-static int (*realselect)(SELECT_SIGNATURE);
+//static int (*realselect)(SELECT_SIGNATURE);
 //static int (*realpoll)(POLL_SIGNATURE);
-static int (*realclose)(CLOSE_SIGNATURE);
+//static int (*realclose)(CLOSE_SIGNATURE);
 static int (*realsocket)(SOCKET_SIGNATURE);
 
 static struct parsedfile *config;
@@ -72,9 +72,9 @@ static char *conffile = NULL;
 /* Exported Function Prototypes */
 void _init(void);
 int connect(CONNECT_SIGNATURE);
-int select(SELECT_SIGNATURE);
+//int select(SELECT_SIGNATURE);
 //int poll(POLL_SIGNATURE);
-int close(CLOSE_SIGNATURE);
+//int close(CLOSE_SIGNATURE);
 int socket(SOCKET_SIGNATURE);
 
 
@@ -99,9 +99,9 @@ void _init(void) {
 
 
 	realconnect = dlsym(RTLD_NEXT, "connect");
-	realselect = dlsym(RTLD_NEXT, "select");
+	//realselect = dlsym(RTLD_NEXT, "select");
 	//realpoll = dlsym(RTLD_NEXT, "poll");
-	realclose = dlsym(RTLD_NEXT, "close");
+	//realclose = dlsym(RTLD_NEXT, "close");
 	realsocket = dlsym(RTLD_NEXT, "socket");
 
 }
@@ -120,7 +120,7 @@ static int get_environment() {
    
    if ((env = getenv("NOSOCKS_DEBUG"))) {
       loglevel = atoi(env);
-      printf("level is %d \n", loglevel); 
+      //printf("level is %d \n", loglevel); 
    }
    
    if (((env = getenv("NOSOCKS_DEBUG_FILE"))) && !suid)
@@ -171,22 +171,26 @@ int socket(SOCKET_SIGNATURE) {
   }
   
   
-   
   
   //Return out on local connections early for better performance
   if ((domain == AF_UNIX) || (domain == AF_LOCAL) || (domain == AF_NETLINK) ) {
     return realsocket(domain, type, protocol);
   }
   
+   
+  get_environment();
   
    get_config ();
    //printf("app name %s %d \n", program_invocation_short_name, domain);
-  
+   show_msg(MSGDEBUG, "app name is %s for socket() \n", program_invocation_short_name);
   
   if(is_app_allowed(program_invocation_short_name)) {
-     show_msg(MSGDEBUG, "Allowing app %s for socket() \n", program_invocation_short_name);
+     show_msg(MSGDEBUG, "socket - Allowing app %s for socket() \n", program_invocation_short_name);
+     show_msg(MSGDEBUG, "socket - Allowing app %s for socket() \n", program_invocation_name);
      return realsocket(domain, type, protocol);
    }
+   
+   show_msg(MSGDEBUG, "Refusing app %s for socket() \n", program_invocation_short_name);
   
   return(-1);
 }
@@ -233,8 +237,7 @@ int connect(CONNECT_SIGNATURE) {
 
 	connaddr = (struct sockaddr_in *) __addr;
   
-  //printf("Got connection request %d \n", connaddr->sin_family);
-  
+ 
   
   //Return out early for better performance
   if ((connaddr->sin_family == AF_UNIX) || (connaddr->sin_family == AF_LOCAL) || (connaddr->sin_family == AF_NETLINK) ) {
@@ -300,16 +303,19 @@ int connect(CONNECT_SIGNATURE) {
    
    if(is_app_allowed(program_invocation_short_name)) {
      show_msg(MSGDEBUG, "Allowing app %s \n", program_invocation_short_name);
+     show_msg(MSGDEBUG, "Allowing app %s \n", program_invocation_name);
      return(realconnect(__fd, __addr, __len));  
    }
     
-    printf("Refusing unauthorized app \n");
-    show_msg(MSGDEBUG, "Refusing unauthorized app");
+    //printf("Refusing unauthorized app \n");
+    show_msg(MSGDEBUG, "Refusing unauthorized app %s \n", program_invocation_short_name);
+    show_msg(MSGDEBUG, "Refusing unauthorized app %s \n", program_invocation_name);
     errno = ECONNREFUSED;
     return(-1);
    
 }
 
+#if 0
 int select(SELECT_SIGNATURE) {
    int nevents = 0;
    int rc = 0;
@@ -331,8 +337,8 @@ int select(SELECT_SIGNATURE) {
 
    return nevents;
 }
-
-
+#endif
+#if 0
 int close(CLOSE_SIGNATURE) {
    int rc;
    struct connreq *conn;
@@ -342,12 +348,12 @@ int close(CLOSE_SIGNATURE) {
 		return(-1);
 	}
 
-   show_msg(MSGDEBUG, "Call to close(%d)\n", fd);
+   //show_msg(MSGDEBUG, "Call to close(%d)\n", fd);
 
    rc = realclose(fd);
    return rc;
 }
-
+#endif
 
 
 
