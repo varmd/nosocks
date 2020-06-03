@@ -69,6 +69,9 @@ static struct connreq *requests = NULL;
 static int suid = 0;
 static char *conffile = NULL;
 
+char global_app_name[255] = "";
+char global_app_long_name[255] = "";
+
 /* Exported Function Prototypes */
 void _init(void);
 int connect(CONNECT_SIGNATURE);
@@ -84,7 +87,18 @@ static int get_environment();
 
 
 
-
+void *clean_string(char *string, char *copy) {
+  
+  char* space_position = strchr(string, ' ');  
+  if(space_position) {
+     char *token;
+     token = strtok(string, " ");
+     strcpy(copy, token);
+     
+  } else {
+    strcpy(copy, string);
+  }
+}
 
 
 void _init(void) {
@@ -99,12 +113,24 @@ void _init(void) {
 
 
 	realconnect = dlsym(RTLD_NEXT, "connect");
-	//realselect = dlsym(RTLD_NEXT, "select");
-	//realpoll = dlsym(RTLD_NEXT, "poll");
-	//realclose = dlsym(RTLD_NEXT, "close");
 	realsocket = dlsym(RTLD_NEXT, "socket");
-
+  
+  
+  global_app_long_name[0] = NULL;
+  
+  if(program_invocation_short_name) {
+    //FILE *logfile = NULL; 
+    //logfile = fopen("/tmp/lgfile", "w+");
+    //fprintf(logfile, " app is %s %s \n", program_invocation_short_name, global_app_name);
+    clean_string(program_invocation_short_name, global_app_name);    
+    
+    //fclose(logfile);
+  }
 }
+
+
+
+
 
 static int get_environment() {
    static int done = 0;
@@ -180,17 +206,36 @@ int socket(SOCKET_SIGNATURE) {
    
   get_environment();
   
-   get_config ();
-   //printf("app name %s %d \n", program_invocation_short_name, domain);
-   show_msg(MSGDEBUG, "app name is %s for socket() \n", program_invocation_short_name);
+  get_config ();
+  #if 0
+  show_msg(MSGDEBUG, "app name is %s for socket() \n", global_app_name );
+  show_msg(MSGDEBUG, "app name dd %s dd1 %s \n", global_app_long_name, program_invocation_name);
+  show_msg(MSGDEBUG, "%s \n", program_invocation_name );
+  #endif 
   
-  if(is_app_allowed(program_invocation_short_name)) {
-     show_msg(MSGDEBUG, "socket - Allowing app %s for socket() \n", program_invocation_short_name);
-     show_msg(MSGDEBUG, "socket - Allowing app %s for socket() \n", program_invocation_name);
+  
+  
+  if(is_app_allowed( global_app_name )) {
+     #if 0
+     show_msg(MSGDEBUG, "socket - Global Allowing app %s for socket() \n", global_app_name);
+     show_msg(MSGDEBUG, "socket - Long Allowing app %s for socket() \n", program_invocation_name);
+     show_msg(MSGDEBUG, "socket - Short Allowing app %s for socket() \n", program_invocation_short_name);
+     #endif
+     return realsocket(domain, type, protocol);
+   } //
+   
+   if(global_app_long_name[0] == NULL)
+     strcpy(global_app_long_name, program_invocation_name);
+   
+   //some wine apps do not fill program_invocation_name on startup
+   if( global_app_long_name[0] != NULL && is_app_allowed( global_app_long_name ) ) {
+     show_msg(MSGDEBUG, "socket - Global Allowing app %s for socket() \n", global_app_long_name);
      return realsocket(domain, type, protocol);
    }
    
-   show_msg(MSGDEBUG, "Refusing app %s for socket() \n", program_invocation_short_name);
+   
+   show_msg(MSGDEBUG, "Refusing app %s for socket() \n", global_app_name);
+   show_msg(MSGDEBUG, "Refusing app %s for socket() \n", global_app_long_name);
   
   return(-1);
 }
@@ -299,16 +344,23 @@ int connect(CONNECT_SIGNATURE) {
    
 
 
-   show_msg(MSGDEBUG, "app name %s \n", program_invocation_short_name);
+   show_msg(MSGDEBUG, "app name %s \n", global_app_name);
    
-   if(is_app_allowed(program_invocation_short_name)) {
-     show_msg(MSGDEBUG, "Allowing app %s \n", program_invocation_short_name);
+   
+   
+   if(is_app_allowed(global_app_name)) {
+     show_msg(MSGDEBUG, "Allowing app %s \n", global_app_name);
+     show_msg(MSGDEBUG, "Allowing app %s \n", program_invocation_name);
+     return(realconnect(__fd, __addr, __len));  
+   }
+   if(global_app_long_name[0] != NULL && is_app_allowed( global_app_long_name )) {
+     show_msg(MSGDEBUG, "Allowing app %s \n", global_app_long_name);
      show_msg(MSGDEBUG, "Allowing app %s \n", program_invocation_name);
      return(realconnect(__fd, __addr, __len));  
    }
     
     //printf("Refusing unauthorized app \n");
-    show_msg(MSGDEBUG, "Refusing unauthorized app %s \n", program_invocation_short_name);
+    show_msg(MSGDEBUG, "Refusing unauthorized app %s \n", global_app_name);
     show_msg(MSGDEBUG, "Refusing unauthorized app %s \n", program_invocation_name);
     errno = ECONNREFUSED;
     return(-1);

@@ -2,7 +2,7 @@
 
 pkgname=nosocks
 pkgver=1
-pkgrel=4
+pkgrel=6
 pkgdesc='Control access to the internet for non-static apps on Linux.'
 url=''
 license=('GPL')
