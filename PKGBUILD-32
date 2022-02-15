@@ -2,15 +2,16 @@
 
 pkgname=lib32-nosocks
 pkgver=1
-pkgrel=3
+pkgrel=8
 pkgdesc='Control access to the internet for non-static apps on Linux.'
 url=''
 license=('GPL')
 arch=('x86_64')
-#install=nosocks.install
+
 
 
 build() {
+  cp -r ../source nosocks
 	cd "${srcdir}/nosocks"
 	export CC="gcc -m32"
   export CXX="g++ -m32"
@@ -19,11 +20,10 @@ build() {
 }
 
 package() {
-  #install=nosocks.install
+
 	cd "${srcdir}/nosocks"
 	mkdir -p "${pkgdir}/usr/lib32/"
 	install libnosocks.so "${pkgdir}/usr/lib32/libnosocks.so"
 	rm -rf libnosocks.so
-  rm -rf *.o
-	
+  rm -rf *.o	
 }
