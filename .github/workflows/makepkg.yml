@@ -1,4 +1,4 @@
-name: Makepkg test
+name: Makepkg
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       id: makepkg
       uses: edlanglois/pkgbuild-action@v1
       with:
-        namcapDisable: true      
+        namcapDisable: true
     - name: Print Package Files
       run: |
         echo "Successfully created the following package archive"
@@ -42,7 +42,7 @@ jobs:
         draft: false
         prerelease: false
     - name: Upload Release Asset
-      id: upload-release-asset 
+      id: upload-release-asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
